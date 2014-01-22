@@ -145,6 +145,15 @@ CLASS_BEGIN(X86Thread, Object)
 	long long btb_reads;
 	long long btb_writes;
 
+        // @Yixin: added for tracking long latency event profile
+        long long stall_start_cycle;
+
+        int stalling;
+
+        long long oldest_event_cycle;
+        unsigned int oldest_event_eip;
+        unsigned int oldest_event_uop;
+
 CLASS_END(X86Thread)
 
 

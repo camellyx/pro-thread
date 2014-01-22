@@ -206,14 +206,38 @@ void X86CoreCommit(X86Core *self)
 		while (quantum && pass)
 		{
 			self->commit_current = (self->commit_current + 1) % x86_cpu_num_threads;
-			if (X86ThreadCanCommit(self->threads[self->commit_current]))
-			{
-				X86ThreadCommit(self->threads[self->commit_current], 1);
+                        X86Cpu *cpu = self->cpu;
+                        X86Thread *thread = self->threads[self->commit_current];
+                        struct x86_uop_t *uop = X86ThreadGetROBHead(thread);
+			int canCommit = X86ThreadCanCommit(thread);
+			if (canCommit)
+                        {
+				X86ThreadCommit(thread, 1);
 				quantum--;
 				pass = x86_cpu_num_threads;
 			}
 			else
 				pass--;
+                        
+                        // @Yixin: added for tracking long latency event profile
+                        if ( !thread->stalling && !canCommit && uop!=NULL ) {
+                          thread->stalling = 1;
+                          thread->stall_start_cycle = asTiming(cpu)->cycle;
+                          thread->oldest_event_uop = uop->uinst->opcode;
+                          thread->oldest_event_eip = uop->eip;
+                          thread->oldest_event_cycle = uop->issue_when;
+                        } else if ( thread->stalling && canCommit ) {
+                          thread->stalling = 0;
+                          long long stalled_cycles = asTiming(cpu)->cycle - thread->stall_start_cycle;
+                          if (stalled_cycles > 20) {
+                            printf("%lld %lld %lld %u %u \n", 
+                                thread->stall_start_cycle, 
+                                stalled_cycles, 
+                                thread->oldest_event_cycle, 
+                                thread->oldest_event_eip, 
+                                thread->oldest_event_uop );
+                          }
+                        }
 		}
 		break;
 	

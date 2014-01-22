@@ -40,6 +40,7 @@ struct x86_uop_t *X86CoreExtractFromEventQueue(X86Core *self);
 int X86ThreadLongLatencyInEventQueue(X86Thread *self);
 int X86ThreadCacheMissInEventQueue(X86Thread *self);
 void X86ThreadRecoverEventQueue(X86Thread *self);
+void X86ThreadOldestInEventQueue(X86Thread *self);
 
 
 #endif
