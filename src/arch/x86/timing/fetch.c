@@ -410,8 +410,8 @@ static void X86CoreFetch(X86Core *self)
 		 * - Quantum expired for current thread.
 		 * - Long latency instruction is in progress. */
 		must_switch = !X86ThreadCanFetch(thread);
-		must_switch = must_switch || asTiming(cpu)->cycle - self->fetch_switch_when >
-			x86_cpu_thread_quantum + x86_cpu_thread_switch_penalty;
+		//must_switch = must_switch || asTiming(cpu)->cycle - self->fetch_switch_when >
+		//	x86_cpu_thread_quantum + x86_cpu_thread_switch_penalty;
 		must_switch = must_switch || X86ThreadLongLatencyInEventQueue(thread);
 
 		/* Switch thread */
@@ -448,6 +448,7 @@ static void X86CoreFetch(X86Core *self)
 				self->fetch_switch_when = asTiming(cpu)->cycle;
 				new_thread->fetch_stall_until = asTiming(cpu)->cycle +
 						x86_cpu_thread_switch_penalty - 1;
+                                printf("@cycle %lld, switch to %d\n", self->fetch_switch_when, self->fetch_current);
 			}
 		}
 
